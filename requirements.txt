@@ -1,0 +1,38 @@
+# Python dependencies for Audio Separation with NMF + CLAP
+
+# Web framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Audio processing
+librosa>=0.10.0
+soundfile>=0.12.0
+pyloudnorm>=0.1.0
+
+# Scientific computing
+numpy>=1.24.0
+scipy>=1.11.0
+scikit-learn>=1.3.0
+
+# Visualization
+matplotlib>=3.7.0
+
+# AI/ML models
+# CLAP model (choose one)
+# Option 1: msclap (recommended)
+msclap>=1.0.0
+
+# Option 2: laion-clap (alternative)
+# laion-clap>=1.1.0
+
+# Deep learning backend
+torch>=2.0.0
+torchaudio>=2.0.0
+
+# Gemini API for audio analysis (optional - for uploaded audio classification)
+google-generativeai>=0.3.0
+
+# Additional utilities
+pydantic>=2.0.0
+python-multipart>=0.0.6
+

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Separation with NMF + CLAP</title>
+    <link rel="stylesheet" href="/static/styles.css?v=2">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 Time-Selective Audio Separation</h1>
+            <p>Text-guided source separation with UNet + CLAP (Time-Selective Editing)</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel: File Selection -->
+            <div class="panel">
+                <div class="card">
+                    <h2> Select Audio File</h2>
+                    
+                    <!-- Upload Section -->
+                    <div class="upload-section">
+                        <input type="file" id="fileUpload" accept=".wav,.mp3,.flac,.ogg,.m4a" style="display: none;">
+                        <button id="uploadBtn" class="btn btn-secondary">📤 Upload Your Audio</button>
+                        <div id="uploadStatus" class="info-badge" style="display: none;"></div>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 10px 0; color: #666;">OR</div>
+                    
+                    <!-- Dataset Selection -->
+                    <select id="fileSelect" class="file-select">
+                        <option value="">Loading files...</option>
+                    </select>
+                    
+                    <div class="audio-section">
+                        <h3>Input Audio</h3>
+                        <audio id="mixPlayer" controls class="audio-player"></audio>
+                        <div class="info-badge" id="classInfo"></div>
+                        
+                        <!-- Sound Detection Button (only for uploaded files) -->
+                        <div id="analyzeSection" style="display: none; margin-top: 1rem;">
+                            <button id="analyzeBtn" class="btn btn-secondary" style="width: 100%;">
+                                🔍 Detect Audio Content
+                            </button>
+                            <div id="analyzeLoading" class="loading" style="display: none;">
+                                Analyzing audio content...
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Audio Analysis Results -->
+                    <div id="analysisResults" class="analysis-results" style="display: none;">
+                        <div id="analysisContent"></div>
+                    </div>
+                    
+                    <div class="spectrogram-section">
+                        <h3>Input Spectrogram</h3>
+                        <img id="mixSpectrogram" class="spectrogram" alt="Spectrogram will appear here">
+                        <div class="loading" id="mixLoading" style="display: none;">Loading spectrogram...</div>
+                    </div>
+                </div>
+
+                <!-- Detection Section -->
+                <div class="card">
+                    <h2> Detect Sounds</h2>
+                    <button id="detectBtn" class="btn btn-secondary">Detect Classes</button>
+                    <div id="detectionResults" class="detection-results"></div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Separation Controls -->
+            <div class="panel">
+                <div class="card">
+                    <h2> Separation Settings</h2>
+                    
+                    <div class="form-group">
+                        <label for="promptInput">Text Prompt</label>
+                        <input type="text" id="promptInput" class="text-input" placeholder="e.g., dog barking, rain, helicopter">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Mode</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="mode" value="keep" checked>
+                                <span>Keep (isolate)</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="mode" value="remove">
+                                <span>Remove (suppress)</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="startTime">Start Time: <span id="startTimeValue">0.0</span>s</label>
+                        <input type="range" id="startTime" class="slider" min="0" max="5" step="0.1" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="endTime">End Time: <span id="endTimeValue">5.0</span>s (full duration)</label>
+                        <input type="range" id="endTime" class="slider" min="0" max="5" step="0.1" value="5">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="components">Components (K): <span id="componentsValue">10</span></label>
+                        <input type="range" id="components" class="slider" min="6" max="12" step="1" value="10">
+                        <small style="color: #666;">Only for NMF method</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Separation Method</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="method" value="unet" checked>
+                                <span> UNet (Trained Model)</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="method" value="nmf">
+                                <span> NMF (Baseline)</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button id="runBtn" class="btn btn-primary">▶ Run Separation</button>
+                    <div class="spinner" id="spinner" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <div class="card">
+                <h2> Results</h2>
+                
+                <div class="results-grid">
+                    <div class="result-item">
+                        <h3>Output Audio</h3>
+                        <audio id="outPlayer" controls class="audio-player"></audio>
+                    </div>
+                    
+                    <div class="result-item">
+                        <h3>Residual Audio</h3>
+                        <audio id="residualPlayer" controls class="audio-player"></audio>
+                    </div>
+                </div>
+                
+                <div class="results-grid">
+                    <div class="result-item">
+                        <h3>Output Spectrogram</h3>
+                        <img id="outSpectrogram" class="spectrogram" alt="Output spectrogram">
+                    </div>
+                    
+                    <div class="result-item">
+                        <h3>Separation Mask</h3>
+                        <img id="maskImage" class="spectrogram" alt="Separation mask">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/app.js?v=2"></script>
+</body>
+</html>
