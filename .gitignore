@@ -27,7 +27,16 @@ wheels/
 venv/
 ENV/
 env/
-.venv
+.venv/
+
+# Environment variables (API keys)
+.env
+.env.local
+.env.*.local
+
+# Model checkpoints (large files)
+checkpoints/
+src/checkpoints/
 
 # IDEs
 .vscode/

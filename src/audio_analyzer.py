@@ -4,12 +4,15 @@ Uses Google's Gemini 1.5 models to detect sounds in uploaded audio files.
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 import google.generativeai as genai
 from typing import List, Dict, Optional
 
-# Configure Gemini API
-# You can set your API key as an environment variable or directly here
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyBTC6N0mN8FLZFgLQewmI1XeKTjDt3H7cU")
+# Load environment variables from .env file
+load_dotenv()
+
+# Configure Gemini API - reads from .env file or environment variable
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 def configure_gemini():
     """Configure Gemini API with your API key."""
