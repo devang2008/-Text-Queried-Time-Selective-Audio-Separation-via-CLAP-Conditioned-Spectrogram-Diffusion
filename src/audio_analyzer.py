@@ -11,13 +11,11 @@ from typing import List, Dict, Optional
 # Load environment variables from .env file
 load_dotenv()
 
-# Configure Gemini API - reads from .env file or environment variable
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
 def configure_gemini():
     """Configure Gemini API with your API key."""
-    if GEMINI_API_KEY:
-        genai.configure(api_key=GEMINI_API_KEY)
+    api_key = os.getenv("GEMINI_API_KEY")
+    if api_key:
+        genai.configure(api_key=api_key)
         return True
     return False
 
